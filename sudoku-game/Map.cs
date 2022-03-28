@@ -1,19 +1,25 @@
 ﻿using System;
+
 namespace sudoku_game
 {
-    public class Map
+    class Map
     {
         Grid[] grids;
-
-        /// <summary>
-        ///  Creates a Map, note to me at start of project: be careful with Grid constructors,
-        ///  you might have changed the required paramaters
-        /// </summary>
-        public Map() : this(9) { }
-        public Map(int gridAmount)
+        
+        public static int SingleTonCount { get; private set; } = 0;
+        public Map()
         {
+            ///<summary>
+            /// Implementing SingleTon
+            ///</summary>
+            if (++SingleTonCount > 1)
+                throw new Exception("You can't have more " +
+                                    "than one instance of Map Class");
+            int gridAmount = 9;
+
             if ((int)Math.Sqrt(gridAmount) != Math.Sqrt(gridAmount))
                 throw new Exception("A map cannot contain");
+
             grids = new Grid[gridAmount];
             for (int i = 0; i < gridAmount; i++)
             {

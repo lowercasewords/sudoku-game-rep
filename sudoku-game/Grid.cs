@@ -15,10 +15,9 @@ class Grid
             return _tiles;
         }
     }
-
-    public Grid() : this(9) { }
-    public Grid(int tileAmount) 
+    public Grid() 
     {
+        int tileAmount = 9;
         do
         {
             _tiles = new int?[tileAmount];
@@ -34,15 +33,15 @@ class Grid
                 if (excludePos.IsMatch(randomPos.ToString()))
                 {
                     i--;
-                    Console.WriteLine("-");
+                    //Console.WriteLine("-");
                     continue;
                 }
                 else
                 { AddToEndRegex(ref excludePos, randomPos); }
 
-                Console.WriteLine($"for-loop was completed {i} times");
-                Console.WriteLine($"random position: {randomPos}");
-                Console.WriteLine($"exclude position: {excludePos}");
+                //Console.WriteLine($"for-loop was completed {i} times");
+                //Console.WriteLine($"random position: {randomPos}");
+                //Console.WriteLine($"exclude position: {excludePos}");
 
                 _tiles[i] = randomPos;
             } 
@@ -52,12 +51,12 @@ class Grid
     }
     private void AddToEndRegex<T>(ref Regex regex, T adding)
     {
-        Console.WriteLine("Match was found");
+        //Console.WriteLine("Match was found");
         regex = new Regex(
                         regex.ToString().Substring(0, regex.ToString().Length - 1)
                         + adding + ']');
     }
-    public void Ensure()
+    private void Ensure()
     {
         
     }

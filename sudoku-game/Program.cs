@@ -8,7 +8,7 @@ namespace sudoku_game
     {
         static void Main(string[] args)
         {
-            Grid testGrid = new Grid();
+
         }
     }
 }
