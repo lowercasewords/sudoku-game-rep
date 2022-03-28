@@ -6,13 +6,13 @@ namespace sudoku_game
     {
         Grid[] grids;
         
-        public static int SingleTonCount { get; private set; } = 0;
+        public static int _singleTonCount = 0;
         public Map()
         {
             ///<summary>
             /// Implementing SingleTon
             ///</summary>
-            if (++SingleTonCount > 1)
+            if (++_singleTonCount > 1)
                 throw new Exception("You can't have more " +
                                     "than one instance of Map Class");
             int gridAmount = 9;
@@ -28,3 +28,6 @@ namespace sudoku_game
         }
     }
 }
+// 1 2 3
+// 4 5 6   horizontal check => x - 1
+// 7 8 9     vertical check => x - 3
