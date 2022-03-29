@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.RegularExpressions;
 using System.Linq;
 using System.Diagnostics;
@@ -13,7 +13,7 @@ class Grid
     /// </summary>
     private static readonly int _tileAmount = 9;
     int?[] _tiles = new int?[_tileAmount];
-    Grid[] grids;
+    static Grid[] _grids;
     public int?[] Tiles
     {
         get { return _tiles; }
@@ -27,10 +27,10 @@ class Grid
     /// The only way to create grids outside of its class
     /// </summary>
     /// <returns> An array of grid objects with non-repeating tile numbers: horizontally and vertically (b</returns>
-    public static Grid[] CreateGrids(ref Grid[] grids)
+    public static Grid[] CreateGrids()
     {
-        grids = new Grid[_tileAmount];
-        grids = (Grid[])Enumerable.Repeat(new Grid(), _tileAmount);
+        _grids = new Grid[_tileAmount];
+        _grids = (Grid[])Enumerable.Repeat(new Grid(), _tileAmount);
         
         void AddToEndRegex<T>(ref Regex regex, T adding) where T : struct
         {
@@ -38,10 +38,12 @@ class Grid
                             regex.ToString().Substring(0, regex.ToString().Length - 1)
                             + adding + ']');
         }
+        do
+        {
         ///<summary>
         /// fills up tiles with numbers in grids one by one
         /// </summary>
-        for (int gi = 0; gi < grids.Length; gi++)
+        for (int gi = 0; gi < _grids.Length; gi++)
         {
             Stopwatch watch = new Stopwatch();
             watch.Start();
@@ -51,8 +53,8 @@ class Grid
             /// </summary>
             do
             {
-                grids[gi]._tiles = new int?[_tileAmount];
-                Regex excludePos = new Regex("[.]");
+                _grids[gi]._tiles = new int?[_tileAmount];
+                Regex excludeValue = new Regex("[.]");
                 int randomValue;
                 for (int i = 0; i < _tileAmount; i++)
                 {
@@ -62,21 +64,22 @@ class Grid
                     do
                     {
                         randomValue = new Random().Next(1, 10);
-                    } while (excludePos.IsMatch(randomValue.ToString()));
-                    AddToEndRegex(ref excludePos, randomValue);
+                    } while (excludeValue.IsMatch(randomValue.ToString()));
+                    AddToEndRegex(ref excludeValue, randomValue);
 
-                    grids[gi]._tiles[i] = randomValue;
+                    _grids[gi]._tiles[i] = randomValue;
                 }
             } while (
-            grids[gi]._tiles.Where(x => x != null).GroupBy(x => x).Any(x => x.Count() > 1)
-            && GridCheck(ref grids));
+            _grids[gi]._tiles.Where(x => x != null).GroupBy(x => x).Any(x => x.Count() > 1));
 
             // should be done in the end for diagnostics
             if (watch.ElapsedMilliseconds * 1000 >= 10)
-                CreateGrids(ref grids);
+                CreateGrids();
             watch.Reset();
         }
-        return grids;
+        } while (GridCheck(ref _grids));
+        
+        return _grids;
     }
     // 1 2 3
     // 4 5 6
@@ -88,14 +91,15 @@ class Grid
     /// <returns>if </returns>
     private static bool GridCheck(ref Grid[] grid)
     {
-        //throw new NotImplementedException();
-        
-        
-        do
+        for (int times = 0; times < 6; times++)
         {
-
-        } while (true);
-
-        
+            for (int i = 0; i < _tileAmount / 3; i++)
+            {
+                for (int s = 0; s < _tileAmount / 3; s++)
+                {
+                    grid._tiles[i] == grid._tilesiles[s];
+                }
+            }
+        }
     }
 }
