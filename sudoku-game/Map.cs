@@ -40,7 +40,7 @@ namespace sudoku_game
                         for (int col = 0; col < Grids[gridRow, gridCol].Tiles.Length; col++) // tile col
                         {
                             int? tile = Grids[gridRow, gridCol].Tiles[row, col];
-                            Console.WriteLine(tile is null ? ' ' : tile);
+                            Console.WriteLine(tile is null ? ' ' : 3);
                             // jumpnig on the new row
                             if (col + 1 == Grids[gridRow, gridCol].Tiles.Length)
                             {
@@ -96,56 +96,63 @@ namespace sudoku_game
                                     + adding + ']');
                 }
 
-                ///<summary>
-                /// In each grid, fills up few random tiles with random numbers
-                /// </summary>
-                for (int gridRow = 0; gridRow < _gridsAcross; gridRow++) //loops through grid rows
+                foreach (Grid grid in grids)
                 {
-                    for (int gridCol = 0; gridCol < _tilesAcross; gridCol++) //loops through grid rows
-                    {
-                        Regex numberExceptions = new Regex("[.]");
-                        bool repeatGrid = false; // if a number can't be in a tile, repeat the loop above
-                        for (int s = 0; s < random.Next(5); s++) //loops how many numbers to put
-                        {
-                            int row = random.Next(1, _tilesAcross);
-                            int col = random.Next(1, _tilesAcross);
-                            for (int rowCheck = 0; rowCheck < _tilesAcross; rowCheck++) // checking if row is occupied
-                            {
-                                for (int colCheck = 0; colCheck < _tilesAcross; colCheck++) // checking if col is occupied
-                                {
-                                    try
-                                    {
-                                        int? currentTile = grids[gridRow, gridCol]._tiles[row, col];
-                                        int? toCheckTile = grids[gridRow, gridCol]._tiles[rowCheck, colCheck];
-                                        if (currentTile == toCheckTile) // and tiles shouldn't be equal horizontally and vertically!
-                                        {
-                                            gridRow--;
-                                            repeatGrid = true;
-                                            break;
-                                        }
-                                    }
-                                    catch (IndexOutOfRangeException ex) // still trying to understand why I have try-catch… 
-                                    { continue; }
-                                }
-                                if (repeatGrid)
-                                { break; }
-                            }
-                            if (repeatGrid)
-                            { break; }
-                            // Assigning a number to a tile
-                            int? numberToPut;
-                            do
-                            {
-                                numberToPut = random.Next(1, _tileAmount + 1);
-                            } while (numberExceptions.IsMatch(numberToPut.ToString()));
-                            AddToEndRegex(ref numberExceptions, numberToPut);
-                            Console.WriteLine(grids.Length);
-                            //Console.WriteLine(grids[gridRow, gridCol]);
-                            //Console.WriteLine(grids[gridRow, gridCol]._tiles[row,col]);
-                            //grids[gridRow, gridCol]._tiles[row, col] = numberToPut;
-                        }
-                    }
+                    
                 }
+                ///<summary>
+                ///// In each grid, fills up few random tiles with random numbers
+                ///// </summary>
+                //for (int gridRow = 0; gridRow < _gridsAcross; gridRow++) //loops through grid rows
+                //{
+                //    for (int gridCol = 0; gridCol < _tilesAcross; gridCol++) //loops through grid rows
+                //    {
+                //        Regex numberExceptions = new Regex("[.]");
+                //        bool repeatGrid = false; // if a number can't be in a tile, repeat the loop above
+                //        for (int s = 0; s < random.Next(5); s++) //loops how many numbers to put
+                //        {
+                //            int row = random.Next(1, _tilesAcross);
+                //            int col = random.Next(1, _tilesAcross);
+                //            for (int rowCheck = 0; rowCheck < _tilesAcross; rowCheck++) // checking if row is occupied
+                //            {
+                //                for (int colCheck = 0; colCheck < _tilesAcross; colCheck++) // checking if col is occupied
+                //                {
+                //                    try
+                //                    {
+                //                        int? currentTile = grids[gridRow, gridCol]._tiles[row, col];
+                //                        int? toCheckTile = grids[gridRow, gridCol]._tiles[rowCheck, colCheck];
+
+                //                        // and tiles shouldn't be equal horizontally and vertically!
+                //                        if (currentTile == toCheckTile) 
+                //                        {
+                //                            gridRow--;
+                //                            repeatGrid = true;
+                //                            break;
+                //                        }
+                //                    }
+                //                    catch (IndexOutOfRangeException ex) // still trying to understand why I have try-catch… 
+                //                    {
+                //                        Console.WriteLine(ex.ToString());
+                //                        continue;
+                //                    }
+                //                }
+                //                if (repeatGrid)
+                //                { break; }
+                //            }
+                //            if (repeatGrid)
+                //            { break; }
+                //            // Assigning a number to a tile
+                //            int? numberToPut;
+                //            do
+                //            {
+                //                numberToPut = random.Next(1, _tileAmount + 1);
+                //            } while (numberExceptions.IsMatch(numberToPut.ToString()));
+                //            AddToEndRegex(ref numberExceptions, numberToPut);
+                //            Console.WriteLine(numberExceptions);
+                //            grids[gridRow, gridCol]._tiles[row, col] = numberToPut;
+                //        }
+                //    }
+                //}
                 return grids;
             }
         }
