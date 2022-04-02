@@ -31,55 +31,24 @@ namespace sudoku_game
         }
         public void PrintMap()
         {
-            //Console.Clear();
-            //for (int gridRow = 0; gridRow < Grids.GetLength(0); gridRow++)
-            //{
-            //    Console.WriteLine("------------");
-            //    for (int gridCol = 0; gridCol < Grids.GetLength(1); gridCol++)
-            //    {
-            //        Console.Write($"[{gridRow * 3 + gridCol+1}]");
-            //        int rowLength = Grids[gridRow, gridCol].Tiles.GetLength(0);
-            //        int colLength = Grids[gridRow, gridCol].Tiles.GetLength(1);
-
-            //        // printing tiles in the current grid
-            //        for (int row = 0; row < rowLength; row++) // tile row
-            //        {
-            //            for (int col = 0; col < colLength; col++) // tile col
-            //            {
-            //                int? tile = Grids[gridRow, gridCol].Tiles[row, col];
-            //                Console.Write(tile is null ? "-" : tile.ToString());
-            //                var something = tile.ToString();
-            //            }
-            //            Console.Write(row + 1 == rowLength ? "|\n" : "|");
-            //            //Console.WriteLine('|');
-            //        }
-            //    }
-            //}
-
-            //for (int gridRow = 0; gridRow < Grids.GetLength(0); gridRow++)
-            //{
-            //    int counter = 0;
-            //    while (counter++ < Grid._gridsAcross)
-            //    {
-            //        for (int gridCol = 0; gridCol < Grids.GetLength(1); gridCol++)
-            //        {
-            //            Console.Write($"[{gridRow * 3 + gridCol + 1}]");
-            //            for (int row = 0; row < Grid._tilesAcross; row++) // tile row
-            //            {
-            //                for (int col = 0; col < Grid._tilesAcross; col++)
-            //                {
-            //                    int? tile = Grids[gridRow, gridCol].Tiles[row, col];
-            //                    Console.Write(tile is null ? "-" : tile.ToString());
-            //                }
-            //                Console.Write(counter + 1 == Grid._tilesAcross ? "|\n" : "|");
-            //            }
-            //        }
-            //    }
-            //}
-            for (int gridRow = 0; gridRow < Grids.GetLength(0); gridRow++)
+            for (int gridRow = 0; gridRow < Grid._gridsAcross; gridRow++)
             {
-
+                for (int tileRow = 0; tileRow < Grid._tilesAcross; tileRow++) // tile row
+                {
+                    for (int gridCol = 0; gridCol < Grid._gridsAcross; gridCol++)
+                    {
+                        for (int tileCol = 0; tileCol < Grid._tilesAcross; tileCol++)
+                        {
+                            int? tile = Grids[gridRow, gridCol].Tiles[tileRow, tileCol];
+                            Console.Write(tile is null ? "-" : tile.ToString());
+                            Console.Write(tileCol + 1 == Grid._tilesAcross ? "|" : "");
+                        }
+                        Console.Write(gridCol + 1 == Grid._gridsAcross ? "\n" : "");
+                    }
+                }
+                Console.WriteLine("------------");
             }
+        }
         public class Grid
         {
             private static Random random = new Random();
