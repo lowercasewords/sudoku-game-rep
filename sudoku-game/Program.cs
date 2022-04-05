@@ -2,37 +2,39 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-
+using System.Diagnostics;
+using System.Threading.Tasks;
 namespace sudoku_game
 {
     class Program
     {
-        private string a = "string a";
-        private string b = "string b";
-        private string c = "string c";
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            Program[,] programs = new Program[,] { { new Program() }, { new Program() } };
-            foreach (Program program in programs)
+            List<int> number = new List<int> { 1, 3, 5 };
+            Regex regex = new Regex("\\d");
+            Array.ForEach(number.ToArray(), (x) =>
             {
-                program.a = "new string a";
-                program.b += " new";
-            }
-            for (int i = 0; i < programs.GetLength(0); i++)
-            {
-                for (int s = 0; s < programs.GetLength(1); s++)
-                {
-                    Console.WriteLine(programs[i, s].a);
-                }
-            }
-            //Array.ForEach<Program[]>(programs, x =>
-            //{
-            //    Array.ForEach<Program>(x, v => Console.WriteLine($"{v.a}\n{v.b}\n{v.c}"));
-            //});
+                Console.WriteLine(regex.Match(x.ToString()).Success);
+            });
 
+            Console.WriteLine("Does it even start?");
+            Console.WriteLine("Numbers are not checked by uniqueness across grids, " +
+                "only checked in its own grid, change that!");
 
-            //Map map = new Map();
-            //map.PrintMap();
+            Stopwatch overallTime = new Stopwatch();
+            Stopwatch individualTime = new Stopwatch();
+            overallTime.Start();
+            individualTime.Start();
+
+            Map map = new Map();
+            Console.WriteLine($"Created a map with {individualTime.ElapsedMilliseconds} milliseconds");
+            individualTime.Reset();
+            individualTime.Start();
+
+            map.PrintMap();
+            Console.WriteLine($"Printed a map with {individualTime.ElapsedMilliseconds} milliseconds");
+            Console.WriteLine($"Overything took: {overallTime.ElapsedMilliseconds} milliseconds");
+            Console.Read();
         }
     }
 }
