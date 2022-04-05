@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 namespace sudoku_game
 {
     /// <summary>
@@ -48,6 +45,7 @@ namespace sudoku_game
                 }
                 Console.WriteLine("------------");
             }
+            
         }
         public class Grid
         {
@@ -65,88 +63,157 @@ namespace sudoku_game
                 get { return _tiles; }
             }
 
-            private Grid()
+            /// <summary>
+            /// Grids have to be created by using static 'CreateGrids' method
+            /// </summary>
+            private Grid() 
             {
+                //DEBUG LOG
                 Console.WriteLine("Instantiating Grid Class");
                 _tiles = new int?[_tilesAcross,_tilesAcross];
             }
             /// <summary>
+            /// Checks if a number repeats horizontally or vertically <b>when 9x9 grid is complete!</b>
+            /// </summary>
+            /// <param name="list">A list of all previous numbers with their tile pos and grid num</param>
+            /// <param name="gridCount">In what grid the current number is</param>
+            /// <param name="tilePos">Position of current number</param>
+            /// <param name="tileNum">A number</param>
+            /// <returns></returns>
+            private static bool RepeatsInGrids(ref List<string> list, int gridCount, string tilePos, int tileNum) 
+            {
+                int tileRow = int.Parse(new Regex("\\d+?(?=,)").Match(tilePos).Value);
+                int tileCol = int.Parse(new Regex("(?<=,)\\d+").Match(tilePos).Value);
+
+                Regex gridToCheckHoriz = null;
+                Regex gridToCheckVert = null;
+                switch (gridCount)
+                {
+                    case 1:
+                    case 2:
+                    case 3:
+                        Console.WriteLine("Check number in top row");
+                        gridToCheckHoriz = new Regex($"[{gridCount + 1}{gridCount + 2}]");
+                        gridToCheckVert = new Regex($"[{gridCount + 3}{gridCount + 6}]");
+                        break;
+                    case 4:
+                    case 5:
+                    case 6:
+                        Console.WriteLine("Check number in middle row");
+                        gridToCheckHoriz = new Regex($"[{gridCount - 1}{gridCount + 1}]");
+                        gridToCheckVert = new Regex($"[{gridCount - 3}{gridCount + 3}]");
+                        break;
+                    case 7:
+                    case 8:
+                    case 9:
+                        Console.WriteLine("Check number in bottom row");
+                        gridToCheckHoriz = new Regex($"[{gridCount - 1}{gridCount - 2}]");
+                        gridToCheckVert = new Regex($"[{gridCount - 3}{gridCount - 6}]");
+                        break; 
+                }
+                Regex anyNum = new Regex("\\d");
+                if( list.Contains($"{tileNum}:{anyNum},{tileCol}|{gridToCheckVert}")
+                    || list.Contains($"{tileNum}:{tileRow},{anyNum}|{gridToCheckHoriz}"))
+                {
+                    Console.WriteLine("Something was repeated!");
+                    return true;
+                }
+                return false;
+            }
+            /// <summary>
             /// The only way to create grids outside of its class
             /// </summary>
-            /// <returns> An array of grid objects with non-repeating tile numbers: horizontally and vertically (b</returns>
+            /// <returns>
+            /// An array of grid objects with non-repeating tile numbers: horizontally and vertically
+            /// </returns>
             internal static Grid[,] CreateGrids()
             {
+                //DEBUG LOG
                 Console.WriteLine("Creating Grid...");
                 grids = new Grid[_gridsAcross, _gridsAcross];
-                for (int row = 0; row < _gridsAcross; row++)
+                for (int gridRow = 0; gridRow < _gridsAcross; gridRow++)
                 {
-                    for (int col = 0; col < _gridsAcross; col++)
+                    for (int gridCol = 0; gridCol < _gridsAcross; gridCol++)
                     {
-                        grids[row, col] = new Grid(); 
+                        grids[gridRow, gridCol] = new Grid();
                     }
                 }
-                int count = 0;
+
+                //DEBUG LOG
                 Console.WriteLine("Start filling the Grids");
-                foreach (Grid grid in grids)
+                // checking for uniqueness of position of a tile in all directions and inside a grid
+                int tileRow = -1;
+                int tileCol = -1; // is -1 because these had to be assigned to something, I chose -1
+
+                // row * 3 + col + 1
+                ///<summary>
+                ///Format: {number}:{tileRow},{tileCol},
+                ///</summary>
+                List<string> allWayTilesToSkip = new List<string>();
+                
+                for (int gridRow = 0; gridRow < _tilesAcross; gridRow++)
                 {
-                    Console.WriteLine($"\nCreating {++count}th grid----------------");
-                    List<string> tilesToSkip = new List<string>();
-                    List<int?> numbersToSkip = new List<int?>();
-
-                    int tilesToFill = random.Next(5);
-                    Console.WriteLine($"Tile Amount: {tilesToFill}");
-                    for (int pos = 0; pos < tilesToFill; pos++) // variable in for loop determines how many positions will be filled
+                    for (int gridCol = 0; gridCol < _tilesAcross; gridCol++)
                     {
-                        Console.WriteLine($"\nFilling {pos + 1}th position");
-                        // checking for uniqueness of position of a tile
-                        int row = -1; 
-                        int col = -1; // is -1 because these had to be assigned to something, I chose -1
-                        string checkUniqueTile = null;
-                        try
-                        {
-                            do
-                            {
-                                row = random.Next(_tilesAcross);
-                                col = random.Next(_tilesAcross);
-                                checkUniqueTile = $"{row},{col}";
-                                Console.WriteLine($"choosing position {checkUniqueTile}");
-                            } while (tilesToSkip.Contains(checkUniqueTile));
-                        }
-                        catch (StackOverflowException ex)
-                        {
-                            Console.WriteLine("Stack overflow when choosing position " + ex);
-                            CreateGrids(); // Restart the method
-                        }
-                        finally
-                        {
-                            Console.WriteLine($"chose position {checkUniqueTile}");
-                            tilesToSkip.Add(checkUniqueTile);
-                        }
+                        int gridCount = gridRow * 3 + gridCol + 1;
 
-                        // giving a unique number to that tile
-                        int? number = null;
-                        try
+                        //DEBUG LOG
+                        Console.WriteLine($"\nCreating {gridCount}th grid----------------");
+                        string tilesToSkip = "";
+                        List<int?> numbersToSkip = new List<int?>();
+
+                        int tilesToFill = random.Next(5);
+                        //DEBUG LOG
+                        Console.WriteLine($"Tile Amount: {tilesToFill}");
+                        for (int pos = 0; pos < tilesToFill; pos++) // variable in for loop determines how many positions will be filled
                         {
-                            do
+                            //DEBUG LOG
+                            Console.WriteLine($"\nFilling {pos + 1}th position");
+
+                            string checkUniqueTile = null;
+                            int? number = null;
+                            try // try to assign non-repeating number without stackoverflow
                             {
-                                number = random.Next(1, _tileAmount + 1);
-                                Console.WriteLine($"choosing number {number}");
-                            } while (numbersToSkip.Contains(number));
+                                do // inside one grid
+                                {
+                                    tileRow = random.Next(_tilesAcross);
+                                    tileCol = random.Next(_tilesAcross);
+                                    checkUniqueTile = $"{tileRow},{tileCol}";
+                                    Console.WriteLine($"choosing position {checkUniqueTile}");
+
+                                    number = random.Next(1, _tileAmount + 1);
+                                    //DEBUG LOG
+                                    Console.WriteLine($"choosing number {number}");
+
+                                    // method in while loop return true if something repeats!
+                                } while (
+                                tilesToSkip.Contains(checkUniqueTile)
+                                || numbersToSkip.Contains(number)
+                                || RepeatsInGrids(ref allWayTilesToSkip, gridCount, checkUniqueTile, number ?? default(int)));
+                            }
+                            catch (StackOverflowException ex)
+                            {
+                                Console.WriteLine("Stack overflow when choosing position " + ex);
+                                CreateGrids(); // Restart the method
+                            }
+                            finally // finnaly assign a number into a position
+                            {
+                                allWayTilesToSkip.Add($"{number}:{tileRow},{tileCol}|{gridCount}");
+
+                                //DEBUG LOG
+                                Console.WriteLine($"chose position {checkUniqueTile}");
+                                tilesToSkip += checkUniqueTile;
+
+                                //DEBUG LOG
+                                Console.WriteLine($"chose number {number}");
+                                numbersToSkip.Add(number);
+                                grids[gridRow, gridCol]._tiles[tileRow, tileCol] = number;
+                            }
+                            Console.WriteLine($"Added {pos + 1}th position; number {number} at [{tileRow},{tileCol}]");
                         }
-                        catch (StackOverflowException ex)
-                        {
-                            Console.WriteLine("Stack overflow when choosing number" + ex);
-                            CreateGrids(); // Restart the method
-                        }
-                        finally
-                        {
-                            Console.WriteLine($"chose number {number}");
-                            numbersToSkip.Add(number);
-                            grid._tiles[row, col] = number;
-                        }
-                        Console.WriteLine($"Added {pos + 1}th position; number {number} at [{row},{col}]");
                     }
                 }
+                Array.ForEach(allWayTilesToSkip.ToArray(), x => Console.WriteLine(x));
                 return grids;
             }
         }

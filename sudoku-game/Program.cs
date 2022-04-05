@@ -9,7 +9,14 @@ namespace sudoku_game
     class Program
     {
         static async Task Main(string[] args)
-        { 
+        {
+            List<int> number = new List<int> { 1, 3, 5 };
+            Regex regex = new Regex("\\d");
+            Array.ForEach(number.ToArray(), (x) =>
+            {
+                Console.WriteLine(regex.Match(x.ToString()).Success);
+            });
+
             Console.WriteLine("Does it even start?");
             Console.WriteLine("Numbers are not checked by uniqueness across grids, " +
                 "only checked in its own grid, change that!");
