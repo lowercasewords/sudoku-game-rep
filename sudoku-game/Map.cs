@@ -8,7 +8,7 @@ namespace sudoku_game
     /// </summary>
     public class Map
     {
-        private static Random random = new Random();
+        private static readonly Random _random = new Random();
         public Grid[,] Grids { get; } = new Grid[,]
         {   { new Grid(), new Grid(), new Grid() },
             { new Grid(), new Grid(), new Grid() },
@@ -37,10 +37,7 @@ namespace sudoku_game
 
         public void PrintMap()
         {
-            //Console.WriteLine(_gridAmount);
-            //Console.WriteLine(_gridsAcross);
-            //Console.WriteLine(_tileAmount);
-            //Console.WriteLine(_tilesAcross);
+            Console.WriteLine("------------");
             for (int gridRow = 0; gridRow < GridsAcross; gridRow++) // grid row
             {
                 for (int tileRow = 0; tileRow < Grid.TilesAcross; tileRow++) // tile row
@@ -49,8 +46,8 @@ namespace sudoku_game
                     {
                         for (int tileCol = 0; tileCol < Grid.TilesAcross; tileCol++) // tile col
                         {
-                            int? number = Grids[gridRow, gridCol].Tiles[tileRow, tileCol]; 
-                            Console.Write(number is null ? "-" : number.ToString()); // print if not number exists
+                            Number number = Grids[gridRow, gridCol].Tiles[tileRow, tileCol]; 
+                            Console.Write(number); // print the number
                             Console.Write(tileCol + 1 == Grid.TilesAcross ? "|" : ""); // place right boundry after last column in a grid
                         }
                         Console.Write(gridCol + 1 == GridsAcross ? "\n" : ""); // go on new grid line
@@ -102,7 +99,7 @@ namespace sudoku_game
                     string tilesToSkip = "";
                     List<int?> numbersToSkip = new List<int?>();
 
-                    int tilesToFill = random.Next(5);
+                    int tilesToFill = _random.Next(5);
                     //DEBUG LOG
                     Console.WriteLine($"Tile Amount: {tilesToFill}");
                     for (int pos = 0; pos < tilesToFill; pos++) // variable in for loop determines how many positions will be filled
@@ -111,17 +108,17 @@ namespace sudoku_game
                         Console.WriteLine($"\nFilling {pos + 1}th position");
 
                         string checkUniqueTile = null;
-                        int? number = null;
+                        int number = default;
                         try // try to assign non-repeating number without stackoverflow
                         {
                             do // tries to assign valid number inside one grid
                             {
-                                tileRow = random.Next(Grid.TilesAcross);
-                                tileCol = random.Next(Grid.TilesAcross);
+                                tileRow = _random.Next(Grid.TilesAcross);
+                                tileCol = _random.Next(Grid.TilesAcross);
                                 checkUniqueTile = $"{tileRow},{tileCol}";
                                 Console.WriteLine($"choosing position {checkUniqueTile}");
 
-                                number = random.Next(1, Grid._tileAmount + 1);
+                                number = _random.Next(1, Grid._tileAmount + 1);
                                 //DEBUG LOG
                                 Console.WriteLine($"choosing number {number}");
 
@@ -129,7 +126,7 @@ namespace sudoku_game
                             } while (
                             tilesToSkip.Contains(checkUniqueTile)
                             || numbersToSkip.Contains(number)
-                            || RepeatsInGrids(ref allWayTilesToSkip, gridCount, checkUniqueTile, number ?? default(int)));
+                            || RepeatsInGrids(ref allWayTilesToSkip, gridCount, checkUniqueTile, number));
                         }
                         catch (StackOverflowException ex)
                         {
@@ -147,7 +144,8 @@ namespace sudoku_game
                             //DEBUG LOG
                             Console.WriteLine($"chose number {number}");
                             numbersToSkip.Add(number);
-                            Grids[gridRow, gridCol].Tiles[tileRow, tileCol] = number;
+                            Grid grid = Grids[gridRow, gridCol];
+                            grid.Tiles[tileRow, tileCol].Value = number;
                         }
                         Console.WriteLine($"Added {pos + 1}th position; number {number} at [{tileRow},{tileCol}]");
                     }
@@ -203,20 +201,22 @@ namespace sudoku_game
                 case 1:
                 case 4:
                 case 7:
+                    Console.WriteLine("Check number in left col");
                     gridToCheckHoriz = $"[{gridCount + 1}{gridCount + 2}]";
                     break;
                 case 2:
                 case 5:
                 case 8:
+                    Console.WriteLine("Check number in middle col");
                     gridToCheckHoriz = $"[{gridCount - 1}{gridCount + 1}]";
                     break;
                 case 3:
                 case 6:
                 case 9:
+                    Console.WriteLine("Check number in right col");
                     gridToCheckHoriz = $"[{gridCount - 1}{gridCount - 2}]";
                     break;
             }
-            Regex anyNum = new Regex("\\d");
             Regex horizCheck = new Regex($"{tileNum}:\\d,{tileCol}\\|{gridToCheckVert}");
             Regex vertCheck = new Regex($"{tileNum}:{tileRow},\\d\\|{gridToCheckHoriz}");
 

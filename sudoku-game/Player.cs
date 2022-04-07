@@ -59,7 +59,7 @@ namespace sudoku_game
                 Console.WriteLine("Invalid number!");
                 MakeMove();
             }
-            playersMap.Grids[gridRow, gridCol].Tiles[tileCol, tileRow] = number;
+            playersMap.Grids[gridRow, gridCol].Tiles[tileCol, tileRow].Value = number;
         }
     }
 }

@@ -9,16 +9,16 @@ namespace sudoku_game
     class Program
     {
         static void Main(string[] args)
-        { 
+        {
+            new Map().PrintMap();
+            //bool @continue = false;
+            //Map map = new Map();
+            //map.PrintMap();
 
-            bool @continue = false;
-            Map map = new Map();
-            map.PrintMap();
+            //do
+            //{
 
-            do
-            {
-
-            } while (@continue);
+            //} while (@continue);
         }
     }
 }
