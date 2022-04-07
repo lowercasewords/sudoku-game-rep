@@ -7,11 +7,10 @@ namespace sudoku_game
     {
         private Random random = new Random();
 
-        private int?[,] _tiles;
-        public int?[,] Tiles
-        {
-            get { return _tiles; }
-        }
+        public int?[,] Tiles { get; set; }
+
+        internal static readonly int _tileAmount = 9;
+        public static int TilesAcross { get; } = (int)Math.Sqrt(_tileAmount);
 
         /// <summary>
         /// Grids have to be created by using static 'CreateGrids' method
@@ -20,7 +19,7 @@ namespace sudoku_game
         {
             //DEBUG LOG
             Console.WriteLine("Instantiating Grid Class");
-            _tiles = new int?[Map._tilesAcross, Map._tilesAcross];
+            Tiles = new int?[TilesAcross, TilesAcross];
         }
     }
 }
