@@ -13,6 +13,8 @@ namespace sudoku_game
 
             bool @continue = false;
             Map map = new Map();
+            map.PrintMap();
+
             do
             {
 
