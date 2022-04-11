@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 namespace sudoku_game
 {
+    [Serializable]
     public class Grid
     {
         //private Random random = new Random();
@@ -13,9 +14,8 @@ namespace sudoku_game
             { new Number(), new Number(), new Number() },
             { new Number(), new Number(), new Number() }
         };
-
-        internal static readonly int _tileAmount = 9;
-        public static int TilesAcross { get; } = (int)Math.Sqrt(_tileAmount);
+        public static int TileAmount { get; } = 9;
+        public static int TilesAcross { get; } = (int)Math.Sqrt(TileAmount);
 
         /// <summary>
         /// Grids have to be created by using static 'CreateGrids' method

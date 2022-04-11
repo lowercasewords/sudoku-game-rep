@@ -6,19 +6,20 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 namespace sudoku_game
 {
+    [Serializable]
     class Program
     {
+        
         static void Main(string[] args)
         {
-            new Map().PrintMap();
-            //bool @continue = false;
-            //Map map = new Map();
-            //map.PrintMap();
+            Map map = new Map();
+            Player player = new Player(map);
 
-            //do
-            //{
-
-            //} while (@continue);
+            while (!map.GameOver())
+            {
+                player.MakeMove();
+            }
+            Console.WriteLine("Game is over!");
         }
     }
 }
