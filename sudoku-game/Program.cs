@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Drawing;
 namespace sudoku_game
 {
     [Serializable]
@@ -18,7 +19,6 @@ namespace sudoku_game
             while (!map.GameOver())
             {
                 player.MakeMove();
-                map.DebugInfo();
             }
             Console.WriteLine("Game is over!");
         }
