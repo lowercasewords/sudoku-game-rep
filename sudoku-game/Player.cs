@@ -7,13 +7,13 @@ namespace sudoku_game
     public class Player
     {
         private Map playersMap;
-        public event EventHandler<MoveInfoArgs> DeleteNumber;
+        public event EventHandler<MoveInfoArgs> ClearNumbers;
         public event EventHandler<MoveInfoArgs> PlaceNumber;
         public Player(Map playersMap)
         {
             this.playersMap = playersMap;
-            DeleteNumber += playersMap.DeleteNumberInfo;
-            PlaceNumber += playersMap.ValidMoveCheck;
+            ClearNumbers += playersMap.DeleteNumberInfo;
+            PlaceNumber += playersMap.PlaceMoveCheck;
         }
 
         //MoveInfoArgs moveInfoArgs = new MoveInfoArgs();
@@ -29,7 +29,7 @@ namespace sudoku_game
                 || gridRow > Map.GridsAcross)
             {
                 Console.WriteLine(" Invalid Grid Row! Try Again\n");
-                MakeMove();
+                return;
             }
             Console.Write("\n\tGrid Column: ");
             if (!int.TryParse(Console.ReadKey().KeyChar.ToString(), out int gridCol)
@@ -37,7 +37,7 @@ namespace sudoku_game
                 || gridCol > Map.GridsAcross)
             {
                 Console.WriteLine(" Invalid Grid Column! Try Again\n");
-                MakeMove();
+                return;
             }
             Console.WriteLine("");
 
@@ -48,7 +48,7 @@ namespace sudoku_game
                 || tileRow > Grid.TilesAcross)
             {
                 Console.WriteLine(" Invalid Tile Row! Try Again\n");
-                MakeMove();
+                return;
             }
             Console.Write("\n\tTile Column: ");
             if (!int.TryParse(Console.ReadKey().KeyChar.ToString(), out int tileCol)
@@ -56,12 +56,12 @@ namespace sudoku_game
                 || tileCol > Grid.TilesAcross)
             {
                 Console.WriteLine(" Invalid Tile Column! Try Again\n");
-                MakeMove();
+                return;
             }
             Console.WriteLine("");
 
 
-            Console.Write("Choose a Number (you can override existing numbers \\ press enter to delete):");
+            Console.Write("Choose a Number (you can override existing numbers by pressing enter:");
             int? ToNullableInt(string x)
             {
                 if (int.TryParse(x, out int result)) return result;
@@ -72,21 +72,31 @@ namespace sudoku_game
                 || number > Number.MaxValue)
             {
                 Console.WriteLine(" Invalid number! Try Again\n");
-                MakeMove();
+                return;
             }
-            Console.WriteLine("");
+            Console.WriteLine("\n");
 
 
             // instance with info about the current number information for its subscribers to work with!
             MoveInfoArgs moveInfoArgs = new MoveInfoArgs(--gridRow, --gridCol, --tileRow, --tileCol, new Number(number));
 
+            //throw new Exception("Delete event is not called when a number is replaced by another number!");
+            // publishing events
+            if (moveInfoArgs.NumberObj.Value is null)
+            {
+                ClearNumbers(this, moveInfoArgs);
+            }
             PlaceNumber(this, moveInfoArgs);
+
+            // receiving callback, recurse if a number is repetitive
             if (!moveInfoArgs.ValidNumber)
             {
                 MakeMove();
             }
-
-            playersMap.Grids[gridRow, gridCol].Tiles[tileRow, tileCol].Value = number;
+            else
+            {
+                playersMap.Grids[gridRow, gridCol].Tiles[tileRow, tileCol].Value = number;
+            }
         }
         public class MoveInfoArgs : EventArgs
         {
@@ -94,15 +104,24 @@ namespace sudoku_game
             public bool ValidNumber { get; set; }
 
             public string NumberInfo { get; }
+            public Number NumberObj { get; }
             public int GridCount { get; }
 
             public MoveInfoArgs(int gridRow, int gridCol, int tileRow, int tileCol, Number number)
             {
                 GridCount = gridRow * 3 + 1 + gridCol;
 
+                NumberObj = number;
                 NumberInfo = $"{number}:{tileRow},{tileCol}|{GridCount}";
 
                 Console.WriteLine(NumberInfo);
+            }
+            public MoveInfoArgs(string numberInfo)
+            {
+                GridCount = Convert.ToInt16(numberInfo[2]) * 3 + 1 + Convert.ToInt16(numberInfo[4]);
+
+                NumberObj = new Number(Convert.ToInt16(numberInfo[6]));
+                NumberInfo = numberInfo;
             }
         }
     }

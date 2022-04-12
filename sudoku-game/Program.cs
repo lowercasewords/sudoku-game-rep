@@ -9,7 +9,7 @@ namespace sudoku_game
     [Serializable]
     class Program
     {
-        
+        static bool repeat = true;
         static void Main(string[] args)
         {
             Map map = new Map();
@@ -18,6 +18,7 @@ namespace sudoku_game
             while (!map.GameOver())
             {
                 player.MakeMove();
+                map.DebugInfo();
             }
             Console.WriteLine("Game is over!");
         }
