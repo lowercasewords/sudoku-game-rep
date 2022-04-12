@@ -15,14 +15,5 @@ namespace sudoku_game
         };
         public static int TileAmount { get; } = 9;
         public static int TilesAcross { get; } = (int)Math.Sqrt(TileAmount);
-
-        /// <summary>
-        /// Grids have to be created by using static 'CreateGrids' method
-        /// </summary>
-        public Grid() 
-        {
-            //DEBUG LOG
-            Console.WriteLine("Instantiating Grid Class");
-        }
     }
 }

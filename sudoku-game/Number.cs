@@ -17,7 +17,6 @@ namespace sudoku_game
             {
                 if (value > MaxValue || value < MinValue)
                 {
-                    //throw new InvalidOperationException("Invalid integer was assigned to Number value");
                     _value = null;
                 }
                 _value = value;

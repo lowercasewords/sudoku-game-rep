@@ -78,8 +78,6 @@ namespace sudoku_game
         /// <returns>true if game is over</returns>
         public bool GameOver()
         {
-            Console.WriteLine($"Total numbers: {numberInfoList.Count}");
-            Console.WriteLine($"Maximum amount: {GridAmount * Grid.TileAmount}");
             return numberInfoList.Count == GridAmount * Grid.TileAmount;
         }
         // when a number is placed in place of null
@@ -92,9 +90,18 @@ namespace sudoku_game
             }
             else
             {
+                // add a number to numberInfo if there was one
                 if (args.NumberObj.Value != null)
                 {
-                    numberInfoList.Add(args.NumberInfo);
+                    foreach (var numberInfo in numberInfoList)
+                    {
+                        if(args.NumberInfo.Substring(2, 5) == numberInfo.Substring(2, 5))
+                        {
+                            DeleteNumberInfo(source, new Player.MoveInfoArgs(numberInfo));
+                            break;
+                        }
+                    }
+                        numberInfoList.Add(args.NumberInfo);
                 }
                 args.ValidNumber = true;
             }
@@ -107,9 +114,13 @@ namespace sudoku_game
             Array.ForEach(numberInfoList.ToArray(), x =>
             {
                 // can only try to remove a number if it was created by user
-                if(numberInfoToCheck.IsMatch(x) && numberInfoList.IndexOf(x) >= createdNumbers)
+                if (numberInfoToCheck.IsMatch(x) && numberInfoList.IndexOf(x) >= createdNumbers)
                 {
                     numberInfoList.Remove(x);
+                    //throw new Exception("This doesn't work, string doesn't want to be" +
+                    //    "deleted if replaced with another number because it's being called " +
+                    //    "only if number is replaced by null");
+
                 }
             });
         }
@@ -122,8 +133,6 @@ namespace sudoku_game
         /// </returns>
         private void CreateGrids()
         {
-            //DEBUG LOG
-            Console.WriteLine("Start filling the Grids");
             // checking for uniqueness of position of a tile in all directions and inside a grid
             int tileRow = -1;
             int tileCol = -1; // is -1 because these had to be assigned to something, I chose -1
@@ -134,17 +143,9 @@ namespace sudoku_game
                 {
                     int gridCount = gridRow * 3 + gridCol + 1;
 
-                    //DEBUG LOG
-                    Console.WriteLine($"\nCreating {gridCount}th grid----------------");
-
                     int tilesToFill = _random.Next(5);
-                    //DEBUG LOG
-                    Console.WriteLine($"Tile Amount: {tilesToFill}");
                     for (int pos = 0; pos < tilesToFill; pos++) // variable in for loop determines how many positions will be filled
                     {
-                        //DEBUG LOG
-                        Console.WriteLine($"\nFilling {pos + 1}th position");
-
                         int number = default;
                         string numberInfoCreator = null;
                         try // try to assign non-repeating number without stackoverflow
@@ -153,11 +154,8 @@ namespace sudoku_game
                             {
                                 tileRow = _random.Next(Grid.TilesAcross);
                                 tileCol = _random.Next(Grid.TilesAcross);
-                                Console.WriteLine($"choosing position [{tileRow},{tileCol}]");
 
                                 number = _random.Next(1, Grid.TileAmount + 1);
-                                //DEBUG LOG
-                                Console.WriteLine($"choosing number {number}");
 
                                 numberInfoCreator = $"{number}:{tileRow},{tileCol}|{gridCount}x";
                                 // method in while loop return true if something repeats!
@@ -176,18 +174,43 @@ namespace sudoku_game
                         {
                             //the numbers created in the grid has extra 'x' because this will prevent the game from deleting these
                             numberInfoList.Add(numberInfoCreator);
-                            Console.WriteLine($"chose position [{tileRow},{tileCol}]");
-                            Console.WriteLine($"chose number {number}");
                             Grid grid = Grids[gridRow, gridCol];
                             grid.Tiles[tileRow, tileCol].Value = number;
                         }
-                        Console.WriteLine($"Added {pos + 1}th position; number {number} at [{tileRow},{tileCol}]");
                     }
                 }
             }
-            createdNumbers = numberInfoList.Count; 
+            createdNumbers = numberInfoList.Count;
+            //Console.Clear();
+        }
 
-            Array.ForEach(numberInfoList.ToArray(), x => Console.WriteLine(x));
+        public void DebugInfo()
+        {
+            Array.ForEach(numberInfoList.ToArray(), x =>
+            {
+                Console.WriteLine(x);
+            });
+            Console.WriteLine($"In Number Info: {numberInfoList.Count}");
+            var i = 0;
+            for (int gridRow = 0; gridRow < GridsAcross; gridRow++) // grid row
+            {
+                for (int tileRow = 0; tileRow < Grid.TilesAcross; tileRow++) // tile row
+                {
+                    for (int gridCol = 0; gridCol < GridsAcross; gridCol++) // grid col
+                    {
+                        for (int tileCol = 0; tileCol < Grid.TilesAcross; tileCol++) // tile col
+                        {
+                            var number = Grids[gridRow, gridCol].Tiles[tileRow, tileCol].Value;
+                            if (number != null)
+                            {
+                                i++;
+                                Console.WriteLine(number);
+                            }
+                        }
+                    }
+                }
+            }
+            Console.WriteLine($"In Grid property {i}");
         }
 
         /// <summary>
@@ -199,18 +222,16 @@ namespace sudoku_game
         {
             foreach (var numberInfo in numberInfoList)
             {
-                // if tries to override pre-made numbers
+                // if tries to override pre-made numbers, does look at its own position
                 if(numberInfo.Substring(2, 5) == numberInfoToCheck.Substring(2, 5) && numberInfo.Contains('x'))
                 {
                     Console.WriteLine("Cannot override pre-made numbers");
-                    Console.WriteLine($"{numberInfo} \\ {numberInfoToCheck}");
                     return true;
                 }
-                // if tries to put the same number in the same grid
+                // if tries to put the same number in the same grid, doesn't look at its own position
                 else if (numberInfo[0] == numberInfoToCheck[0] && numberInfo[6] == numberInfoToCheck[6])
                 {
                     Console.WriteLine("Repeats in the tile!");
-                    Console.WriteLine($"{numberInfo} \\ {numberInfoToCheck}");
                     return true;
                 }
             }
@@ -273,13 +294,11 @@ namespace sudoku_game
             {
                 if (horizCheck.IsMatch(numberInfo))
                 {
-                    Console.WriteLine($"{numberInfo} \\ {numberInfoToCheck}");
                     Console.WriteLine("Repeats In The Grid Horizontally!");
                     return true;
                 }
                 else if (vertCheck.IsMatch(numberInfo))
                 {
-                    Console.WriteLine($"{numberInfo} \\ {numberInfoToCheck}");
                     Console.WriteLine("Repeats In The Grid Vertically!");
                     return true;
                 }
