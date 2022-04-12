@@ -2,6 +2,12 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+
+
+// if you assign numbers that repeat with pre-created numbers, they won't be assigned until you assing a non-repeating number.
+// if your number intersects with a number you have created, it will skip map printing and grid row assignment or will just put
+//it without checking?
+// all happens because they are not put into the database
 namespace sudoku_game
 {
     /// <summary>
@@ -20,6 +26,14 @@ namespace sudoku_game
 
         public static int GridAmount { get; } = 9;
         public static int GridsAcross { get; } = (int)Math.Sqrt(GridAmount);
+
+        ///<summary>
+        ///Format: {number}:{tileRow},{tileCol}|{tileCount}
+        ///Is used to store all created numbers 
+        ///</summary>
+        public List<string> numberInfoList = new List<string>();
+
+        int createdNumbers = 0;
 
         public Map()
         {
@@ -64,11 +78,12 @@ namespace sudoku_game
         /// <returns>true if game is over</returns>
         public bool GameOver()
         {
-            Console.WriteLine(numberInfoList.Count);
-            Console.WriteLine(GridAmount * Grid.TileAmount);
+            Console.WriteLine($"Total numbers: {numberInfoList.Count}");
+            Console.WriteLine($"Maximum amount: {GridAmount * Grid.TileAmount}");
             return numberInfoList.Count == GridAmount * Grid.TileAmount;
         }
-        public void ValidMoveCheck(object source, Player.MoveInfoArgs args)
+        // when a number is placed in place of null
+        public void PlaceMoveCheck(object source, Player.MoveInfoArgs args)
         {
             // assingning args.ValidNumber as a call back to the source
             if (RepeatsInGrids(args.GridCount, args.NumberInfo) || RepeatInTile(args.NumberInfo)){
@@ -77,21 +92,28 @@ namespace sudoku_game
             }
             else
             {
+                if (args.NumberObj.Value != null)
+                {
+                    numberInfoList.Add(args.NumberInfo);
+                }
                 args.ValidNumber = true;
             }
         }
-
+        // is called when the number is replaced by anothe number or deleted 
         public void DeleteNumberInfo(object source, Player.MoveInfoArgs args)
         {
-            Console.WriteLine(numberInfoList.Remove(args.NumberInfo));
-            Console.WriteLine("");
+            Regex numberInfoToCheck = new Regex($".*{args.NumberInfo.Substring(2, 5)}");
+            //numberInfoList.Remove(args.NumberInfo);
+            Array.ForEach(numberInfoList.ToArray(), x =>
+            {
+                // can only try to remove a number if it was created by user
+                if(numberInfoToCheck.IsMatch(x) && numberInfoList.IndexOf(x) >= createdNumbers)
+                {
+                    numberInfoList.Remove(x);
+                }
+            });
         }
-        ///<summary>
-        ///Format: {number}:{tileRow},{tileCol}|{tileCount}
-        ///Is used to store all created numbers 
-        ///</summary>
-        List<string> numberInfoList = new List<string>();
-
+        
         /// <summary>
         /// The only way to create grids outside of its class
         /// </summary>
@@ -137,27 +159,24 @@ namespace sudoku_game
                                 //DEBUG LOG
                                 Console.WriteLine($"choosing number {number}");
 
-                                numberInfoCreator = $"{number}:{tileRow},{tileCol}|{gridCount}";
+                                numberInfoCreator = $"{number}:{tileRow},{tileCol}|{gridCount}x";
                                 // method in while loop return true if something repeats!
                             } while (RepeatInTile(numberInfoCreator) || RepeatsInGrids(gridCount, numberInfoCreator));
                         }
                         catch (StackOverflowException ex)
                         {
-                            Console.WriteLine("Restarting a Grid Creator Method: Stack Overflow when choosing position " + ex);
+                            Console.WriteLine($"Restarting a Grid Creator Method: Stack Overflow when choosing position {ex}");
                             CreateGrids(); // Restart the method
                         }
                         catch(NullReferenceException ex)
                         {
-                            Console.WriteLine("Restarting a Grid Creator Method: Null Reference when accessing Number Info Creator " + ex);
+                            Console.WriteLine($"Restarting a Grid Creator Method: Null Reference when accessing Number Info Creator {ex}");
                         }
                         finally // finnaly assign a number into a position
                         {
-                            numberInfoList.Add($"{number}:{tileRow},{tileCol}|{gridCount}");
-                            //DEBUG LOG
-                            //if (numberInfoCreator is not null) {
-                                Console.WriteLine($"chose position [{tileRow},{tileCol}]");
-                            //}
-                            //DEBUG LOG
+                            //the numbers created in the grid has extra 'x' because this will prevent the game from deleting these
+                            numberInfoList.Add(numberInfoCreator);
+                            Console.WriteLine($"chose position [{tileRow},{tileCol}]");
                             Console.WriteLine($"chose number {number}");
                             Grid grid = Grids[gridRow, gridCol];
                             grid.Tiles[tileRow, tileCol].Value = number;
@@ -166,20 +185,29 @@ namespace sudoku_game
                     }
                 }
             }
+            createdNumbers = numberInfoList.Count; 
+
             Array.ForEach(numberInfoList.ToArray(), x => Console.WriteLine(x));
         }
+
         /// <summary>
         /// Checks if a number repeats in the specific tile
         /// </summary>
-        /// <param name="numberInfoToCheck">a number info string to be checked as a string: "{number}:{tileRow},{tileCol}|{gridCount}"</param>
+        /// <param name="numberInfoToCheck">a number info string to be checked as a string: "{number}:{tileRow},{tileCol}|{gridCount}" if it number was made by a game, it would have an 'x' in the end</param>
         /// <returns>true if a duplicate found</returns>
         private bool RepeatInTile(string numberInfoToCheck)
         {
             foreach (var numberInfo in numberInfoList)
             {
-                if ((numberInfo[0] == numberInfoToCheck[0]
-                    && numberInfo[numberInfo.Length - 1] == numberInfoToCheck[numberInfoToCheck.Length - 1])
-                    || (numberInfo.Substring(2,5) == numberInfoToCheck.Substring(2, 5) && numberInfoToCheck[0].Equals("-")))
+                // if tries to override pre-made numbers
+                if(numberInfo.Substring(2, 5) == numberInfoToCheck.Substring(2, 5) && numberInfo.Contains('x'))
+                {
+                    Console.WriteLine("Cannot override pre-made numbers");
+                    Console.WriteLine($"{numberInfo} \\ {numberInfoToCheck}");
+                    return true;
+                }
+                // if tries to put the same number in the same grid
+                else if (numberInfo[0] == numberInfoToCheck[0] && numberInfo[6] == numberInfoToCheck[6])
                 {
                     Console.WriteLine("Repeats in the tile!");
                     Console.WriteLine($"{numberInfo} \\ {numberInfoToCheck}");
@@ -193,37 +221,16 @@ namespace sudoku_game
         /// Checks if a number repeats horizontally or vertically <b>when 9x9 grid is complete!</b>
         /// </summary>
         /// <param name="gridCount">In what grid the current number is</param>
-        /// <param name="numberInfo">Number's position represented as a string: "{number}:{tileRow},{tileCol}|{gridCount}"</param>
+        /// <param name="numberInfoToCheck">Number's position represented as a string: "{number}:{tileRow},{tileCol}|{gridCount} if it number was made by a game, it would have an 'x' in the end"</param>
         /// <returns>true if a duplicate found</returns>
-        private bool RepeatsInGrids(int gridCount, string numberInfo)
+        private bool RepeatsInGrids(int gridCount, string numberInfoToCheck)
         {
-            bool returnResult = false;
-
-            int tileRow = int.Parse(new Regex("\\d+?(?=,)").Match(numberInfo).Value);
-            int tileCol = int.Parse(new Regex("(?<=,)\\d+").Match(numberInfo).Value);
+            int tileRow = int.Parse(new Regex("\\d+?(?=,)").Match(numberInfoToCheck).Value);
+            int tileCol = int.Parse(new Regex("(?<=,)\\d+").Match(numberInfoToCheck).Value);
 
             string gridToCheckHoriz = null;
             string gridToCheckVert = null;
-            switch (gridCount)
-            {
-                case 1:
-                case 2:
-                case 3:
-                    gridToCheckVert = $"[{gridCount + 3}{gridCount + 6}]";
-                    break;
-                case 4:
-                case 5:
-                case 6:
-                    gridToCheckVert = $"[{gridCount - 3}{gridCount + 3}]";
-                    break;
-                case 7:
-                case 8:
-                case 9:
-                    Console.WriteLine("Check number in bottom grid row");
-                    gridToCheckVert = $"[{gridCount - 3}{gridCount - 6}]";
-                    break;
-            }
-            switch (gridCount)
+            switch (gridCount) // grids to check horizontally
             {
                 case 1:
                 case 4:
@@ -235,46 +242,49 @@ namespace sudoku_game
                 case 8:
                     gridToCheckHoriz = $"[{gridCount - 1}{gridCount + 1}]";
                     break;
-                case 3:	
+                case 3:
                 case 6:
                 case 9:
                     gridToCheckHoriz = $"[{gridCount - 1}{gridCount - 2}]";
                     break;
             }
-
-            Regex horizCheck = new Regex($"{numberInfo[0]}:\\d,{tileCol}\\|{gridToCheckVert}");
-            Regex vertCheck = new Regex($"{numberInfo[0]}:{tileRow},\\d\\|{gridToCheckHoriz}");
-
-            Array.ForEach(numberInfoList.ToArray(), x =>
+            switch (gridCount) // grids to check vertically
             {
-                if (horizCheck.IsMatch(x))
-                {
-                    Console.WriteLine($"{x} has matched {horizCheck}");
-                    returnResult = true;
-                    if (!vertCheck.IsMatch(x))
-                    {
-                        Console.WriteLine($"{x} has matched {vertCheck}");
-
-                    }
-                    return;
-                }
-                if (vertCheck.IsMatch(x))
-                {
-                    Console.WriteLine($"{x} has matched {vertCheck}");
-                    returnResult = true;
-                    return;
-                }
-            });
-            //DEBUG START:
-            if (returnResult)
-            {
-                Console.WriteLine("Repeats In The Grid!");
+                case 1:
+                case 2:
+                case 3:
+                    gridToCheckVert = $"[{gridCount + 3}{gridCount + 6}]";
+                    break;
+                case 4:
+                case 5:
+                case 6:
+                    gridToCheckVert = $"[{gridCount - 3}{gridCount + 3}]";
+                    break;
+                case 7:	
+                case 8:
+                case 9:
+                    gridToCheckVert = $"[{gridCount - 3}{gridCount - 6}]";
+                    break;
             }
-            //DEBUG END
-            return returnResult;
+            Regex horizCheck = new Regex($"{numberInfoToCheck[0]}:{tileRow},\\d\\|{gridToCheckHoriz}");
+            Regex vertCheck = new Regex($"{numberInfoToCheck[0]}:\\d,{tileCol}\\|{gridToCheckVert}");
+
+            foreach (string numberInfo in numberInfoList)
+            {
+                if (horizCheck.IsMatch(numberInfo))
+                {
+                    Console.WriteLine($"{numberInfo} \\ {numberInfoToCheck}");
+                    Console.WriteLine("Repeats In The Grid Horizontally!");
+                    return true;
+                }
+                else if (vertCheck.IsMatch(numberInfo))
+                {
+                    Console.WriteLine($"{numberInfo} \\ {numberInfoToCheck}");
+                    Console.WriteLine("Repeats In The Grid Vertically!");
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }
-// 1 2 3
-// 4 5 6   row check => x -+ 1
-// 7 8 9   col check => x -+ 3

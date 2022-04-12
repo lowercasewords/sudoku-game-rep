@@ -9,7 +9,7 @@ namespace sudoku_game
     [Serializable]
     class Program
     {
-        
+        static bool repeat = true;
         static void Main(string[] args)
         {
             Map map = new Map();

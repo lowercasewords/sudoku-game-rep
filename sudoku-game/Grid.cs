@@ -7,7 +7,6 @@ namespace sudoku_game
     public class Grid
     {
         //private Random random = new Random();
-
         public Number[,] Tiles { get; private set; } = new Number[,]
         {
             { new Number(), new Number(), new Number() },
