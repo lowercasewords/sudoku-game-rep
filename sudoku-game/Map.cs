@@ -53,6 +53,7 @@ namespace sudoku_game
 
         public void PrintMap()
         {
+            Console.ResetColor();
             Console.WriteLine("------------");
             for (int gridRow = 0; gridRow < GridsAcross; gridRow++) // grid row
             {
@@ -63,12 +64,23 @@ namespace sudoku_game
                         for (int tileCol = 0; tileCol < Grid.TilesAcross; tileCol++) // tile col
                         {
                             Number number = Grids[gridRow, gridCol].Tiles[tileRow, tileCol];
-                            Console.Write(number); // print the number
+                            if (!number.UserMade && number.Value != null)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.Write(number);
+                            }
+                            else
+                            {
+                                Console.ResetColor();
+                                Console.Write(number);
+                            }
+                            Console.ResetColor();
                             Console.Write(tileCol + 1 == Grid.TilesAcross ? "|" : ""); // place right boundry after last column in a grid
                         }
                         Console.Write(gridCol + 1 == GridsAcross ? "\n" : ""); // go on new grid line
                     }
                 }
+                Console.ResetColor();
                 Console.WriteLine("------------");
             }
         }
@@ -117,10 +129,6 @@ namespace sudoku_game
                 if (numberInfoToCheck.IsMatch(x) && numberInfoList.IndexOf(x) >= createdNumbers)
                 {
                     numberInfoList.Remove(x);
-                    //throw new Exception("This doesn't work, string doesn't want to be" +
-                    //    "deleted if replaced with another number because it's being called " +
-                    //    "only if number is replaced by null");
-
                 }
             });
         }
@@ -163,6 +171,7 @@ namespace sudoku_game
                         }
                         catch (StackOverflowException ex)
                         {
+
                             Console.WriteLine($"Restarting a Grid Creator Method: Stack Overflow when choosing position {ex}");
                             CreateGrids(); // Restart the method
                         }
@@ -181,7 +190,7 @@ namespace sudoku_game
                 }
             }
             createdNumbers = numberInfoList.Count;
-            //Console.Clear();
+            Console.Clear();
         }
 
         public void DebugInfo()

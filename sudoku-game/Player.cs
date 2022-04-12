@@ -16,8 +16,6 @@ namespace sudoku_game
             PlaceNumber += playersMap.PlaceMoveCheck;
         }
 
-        //MoveInfoArgs moveInfoArgs = new MoveInfoArgs();
-
         public void MakeMove()
         {
             playersMap.PrintMap();
@@ -78,7 +76,7 @@ namespace sudoku_game
 
 
             // instance with info about the current number information for its subscribers to work with!
-            MoveInfoArgs moveInfoArgs = new MoveInfoArgs(--gridRow, --gridCol, --tileRow, --tileCol, new Number(number));
+            MoveInfoArgs moveInfoArgs = new MoveInfoArgs(--gridRow, --gridCol, --tileRow, --tileCol, new Number(number, true));
 
             //throw new Exception("Delete event is not called when a number is replaced by another number!");
             // publishing events
@@ -91,11 +89,13 @@ namespace sudoku_game
             // receiving callback, recurse if a number is repetitive
             if (!moveInfoArgs.ValidNumber)
             {
-                MakeMove();
+                return;
             }
             else
             {
+                // add number into the map grid
                 playersMap.Grids[gridRow, gridCol].Tiles[tileRow, tileCol].Value = number;
+                playersMap.Grids[gridRow, gridCol].Tiles[tileRow, tileCol].UserMade = true;
             }
         }
         public class MoveInfoArgs : EventArgs
@@ -113,14 +113,12 @@ namespace sudoku_game
 
                 NumberObj = number;
                 NumberInfo = $"{number}:{tileRow},{tileCol}|{GridCount}";
-
-                Console.WriteLine(NumberInfo);
             }
             public MoveInfoArgs(string numberInfo)
             {
                 GridCount = Convert.ToInt16(numberInfo[2]) * 3 + 1 + Convert.ToInt16(numberInfo[4]);
 
-                NumberObj = new Number(Convert.ToInt16(numberInfo[6]));
+                NumberObj = new Number(Convert.ToInt16(numberInfo[6]), true);
                 NumberInfo = numberInfo;
             }
         }
